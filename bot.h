@@ -1,5 +1,6 @@
 #include "util.h"
 #include <limits.h>
+#include "checkers.h"
 
 // Forward declaration of the struct
 struct board_node_s;
@@ -14,9 +15,6 @@ struct board_node_s {
     unsigned char childrenCount;
     int eval;
 };
-
-
-static int depth = 7;
 
 
 Node* createNode(Board b) {
@@ -131,6 +129,120 @@ void generateChildren(Node* n) {
 }
 
 
+int getChildren(Board b, Board* children)
+{
+	int childCounter = 0;
+
+	unsigned int canMove = b.validMoves.up4 | b.validMoves.down4 | b.validMoves.up5or3 | b.validMoves.down5or3;
+
+	for (int i = 0; i < 32; i++)
+	{
+		unsigned int p = 1U << i;
+		if (p & canMove)
+		{
+			if (b.canCapture)
+			{
+				if (p & 0x0F0F0F0F)
+				{
+					if (p & b.validMoves.up5or3)
+					{
+						Board child = b;
+						movePiece(&child, i, i + 9);
+						children[childCounter++] = child;
+					}
+
+					if (p & b.validMoves.up4)
+					{
+						Board child = b;
+						movePiece(&child, i, i + 7);
+						children[childCounter++] = child;
+					}
+
+					if (p & b.validMoves.down5or3)
+					{
+						Board child = b;
+						movePiece(&child, i, i - 7);
+						children[childCounter++] = child;
+					}
+
+					if (p & b.validMoves.down4)
+					{
+						Board child = b;
+						movePiece(&child, i, i - 9);
+						children[childCounter++] = child;
+					}
+				}
+
+				else
+				{
+					if (p & b.validMoves.up5or3)
+					{
+						Board child = b;
+						movePiece(&child, i, i + 7);
+						children[childCounter++] = child;
+					}
+
+					if (p & b.validMoves.up4)
+					{
+						Board child = b;
+						movePiece(&child, i, i + 9);
+						children[childCounter++] = child;
+					}
+
+					if (p & b.validMoves.down5or3)
+					{
+						Board child = b;
+						movePiece(&child, i, i - 9);
+						children[childCounter++] = child;
+					}
+
+					if (p & b.validMoves.down4)
+					{
+						Board child = b;
+						movePiece(&child, i, i - 7);
+						children[childCounter++] = child;
+					}
+				}
+			}
+			else
+			{
+				if (p & b.validMoves.up5or3)
+				{
+					Board child = b;
+					if (p & up5down3)
+						movePiece(&child, i, i + 5);
+					else
+						movePiece(&child, i, i + 3);
+					children[childCounter++] = child;
+				}
+
+				if (p & b.validMoves.up4)
+				{
+					Board child = b;
+					movePiece(&child, i, i + 4);
+					children[childCounter++] = child;
+				}
+
+				if (p & b.validMoves.down5or3)
+				{
+					Board child = b;
+					if (p & up5down3)
+						movePiece(&child, i, i - 3);
+					else
+						movePiece(&child, i, i - 5);
+					children[childCounter++] = child;
+				}
+
+				if (p & b.validMoves.down4)
+				{
+					Board child = b;
+					movePiece(&child, i, i - 4);
+					children[childCounter++] = child;
+				}
+			}
+		}
+	}
+}
 
 int buildTree(Node* n, int depth) {
 	if (depth==0)
@@ -217,6 +329,37 @@ int minimax(Node* node) {
     }
 }
 
+
+int minimax2(Board b, int depth)
+{
+	if (depth <= 0)
+		return evaluatePosition(b);
+
+	Board children[42];
+	int childrenCount = getChildren(b, children);
+	if (!b.canCapture) depth--;
+
+	if (b.turn == 0) { // whites turn
+		int maxEval = INT_MIN;
+
+		for (unsigned char i = 0; i < childrenCount; i++)
+		{
+			int eval = minimax2(children[i], depth);
+			maxEval = eval > maxEval ? eval : maxEval;
+		}
+		return maxEval;
+	}
+	else {
+		int minEval = INT_MAX;
+
+		for (unsigned char i = 0; i < childrenCount; i++)
+		{
+			int eval = minimax2(children[i], depth);
+			minEval = eval < minEval ? eval : minEval;
+		}
+		return minEval;
+	}
+}
 
 Board choose_best_move(Node* root) {
 	Board bestMove;

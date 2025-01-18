@@ -24,3 +24,21 @@ int hammingWeight(unsigned int n) {
 		hammingLookupTable[(n >> 16) & 0xff] +
 		hammingLookupTable[(n >> 24) & 0xff];
 }
+
+void printBinary(unsigned int value)
+{
+	const int rows = 8;
+	const int cols = 4;
+
+	// Iterate over the 32 bits of the unsigned integer
+	for (int i = 0; i < rows; ++i)
+	{
+		for (int j = 0; j < cols; ++j)
+		{
+			// Extract each bit from the most significant to the least significant
+			unsigned int bit = (value >> (31 - (i * cols + j))) & 1;
+			printf("%u", bit);
+		}
+		printf("\n");
+	}
+}
