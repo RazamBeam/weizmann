@@ -38,6 +38,22 @@ typedef struct {
 
 
 
+Board newBoard() {
+	Board b;
+	b.whites = 0;
+	b.blacks = 0;
+	b.kings = 0;
+
+	b.turn = 0;
+	b.lastTurnCapture = 0;
+	b.lastCaptureIndex = 0;
+	b.canCapture = 0;
+	return b;
+}
+
+
+
+
 void updateValidMoves(Board* b) {
 	unsigned int curr, opp;
 	unsigned int canGoUp, canGoDown;
