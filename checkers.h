@@ -201,9 +201,7 @@ OnePieceValidMoves getValidMoves(Board b, int pLoc) {
 
 
 void movePiece(Board* b, int i1, int i2) {
-	
-	//printf("%d %d\n", i1, i2);
-	
+
 	if (i1==i2) {
 		b->turn++;
 		b->lastTurnCapture = 0;
